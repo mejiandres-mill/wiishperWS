@@ -8,6 +8,17 @@ public class Recomendation {
 	long receipient;
 	long product;
 	Date rec_date;
+	boolean showed;
+
+	public boolean isShowed()
+	{
+		return showed;
+	}
+
+	public void setShowed(boolean showed)
+	{
+		this.showed = showed;
+	}
 
 	public long getRecomender()
 	{

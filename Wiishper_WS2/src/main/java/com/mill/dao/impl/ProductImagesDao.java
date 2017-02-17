@@ -23,7 +23,7 @@ public class ProductImagesDao {
 	public static <T> PreparedStatement getPreparedInsert(Connection conn, String tablename, T currentEntity) throws SQLException
 	{
 		ProductImages pi = (ProductImages) currentEntity;
-		PreparedStatement ps = conn.prepareStatement("INSERT INTO " + tablename + " (idproduct_images, images_idimages, products_idproducts, show) VALUES (?, ?, ?, ?)");
+		PreparedStatement ps = conn.prepareStatement("INSERT INTO " + tablename + " (idproduct_images, images_idimages, products_idproducts, `show`) VALUES (?, ?, ?, ?)");
 		ps.setLong(1, pi.getIdproduct_images());
 		ps.setLong(2, pi.getImage());
 		ps.setLong(3, pi.getProduct());
@@ -35,7 +35,7 @@ public class ProductImagesDao {
 	public static <T> PreparedStatement getPreparedUpdate(Connection conn, String tablename, T currentEntity) throws SQLException
 	{
 		ProductImages pi = (ProductImages) currentEntity;
-		PreparedStatement ps = conn.prepareStatement("UPDATE " + tablename + " SET images_idimages = ?, products_idproducts = ?, show = ? WHERE idproduct_images = ?");
+		PreparedStatement ps = conn.prepareStatement("UPDATE " + tablename + " SET images_idimages = ?, products_idproducts = ?, `show` = ? WHERE idproduct_images = ?");
 		ps.setLong(1, pi.getImage());
 		ps.setLong(2, pi.getProduct());
 		ps.setBoolean(3, pi.isShow());

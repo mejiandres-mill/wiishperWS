@@ -23,7 +23,7 @@ public class StoreDao {
 	public static <T> PreparedStatement getPreparedInsert(Connection conn, String tablename, T currentEntity) throws SQLException
 	{
 		Store store = (Store) currentEntity;
-		PreparedStatement ps = conn.prepareStatement("INSERT INTO " + tablename + " (idstores, countries_idcountries, stie, name) VALUES ( ?, ?, ?, ?)");
+		PreparedStatement ps = conn.prepareStatement("INSERT INTO " + tablename + " (idstores, countries_idcountries, site, name) VALUES ( ?, ?, ?, ?)");
 		ps.setLong(1, store.getIdstores());
 		ps.setLong(2, store.getCountry());
 		ps.setString(3, store.getSite());

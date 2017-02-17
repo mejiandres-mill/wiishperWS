@@ -1,14 +1,13 @@
 package com.mill.models;
 
-import java.io.Serializable;
 import java.sql.Date;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class User implements Serializable{
+public class User 
+{
 
-	private static final long serialVersionUID = -8352821909603116965L;
 	long idusers;
 	String name;
 	String password;

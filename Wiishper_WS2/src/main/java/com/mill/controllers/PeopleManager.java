@@ -71,16 +71,17 @@ public class PeopleManager {
 		Connection conn = sqlUtil.getConnection();
 		List<User> users = factory.getDaoRead().<User> getAllForInputExact(conn, Constants.TABLE_USERS, "email",
 				username);
+		conn.close();
 		Object[] params = new Object[1];
 		params[0] = users.get(0).getIdusers();
 		List<User> result = new ArrayList<>();
-
+		conn = sqlUtil.getConnection();
 		if (friends)
 		{
 			List<Friendship> friendships = sqlUtil.<Friendship> executeDBOperation(
 					"SELECT * FROM friends WHERE friender = ?", Constants.TABLE_FRIENDS, params);
 			for (Friendship f : friendships)
-				result.add(factory.getDaoRead().<User> get(sqlUtil.getConnection(), Constants.TABLE_USERS,
+				result.add(factory.getDaoRead().<User> get(conn, Constants.TABLE_USERS,
 						new long[] { f.getFriendee() }));
 			r.setData(mapper.writeValueAsString(result));
 		} else
@@ -93,6 +94,7 @@ public class PeopleManager {
 					Constants.TABLE_USERS, params);
 			r.setData(mapper.writeValueAsString(people));
 		}
+		conn.close();
 		return r;
 	}
 	
@@ -103,6 +105,7 @@ public class PeopleManager {
 		Connection conn = sqlUtil.getConnection();
 		List<User> users = factory.getDaoRead().<User> getAllForInputExact(conn, Constants.TABLE_USERS, "email",
 				username);
+		conn.close();
 		Map<String, Object> json = mapper.readValue(data, Map.class);
 		Friendship f = new Friendship();
 		f.setFriender(users.get(0).getIdusers());
@@ -140,6 +143,7 @@ public class PeopleManager {
 			r.setData("true");
 		else
 			r.setData("false");
+		conn.close();
 		return r;
 	}
 

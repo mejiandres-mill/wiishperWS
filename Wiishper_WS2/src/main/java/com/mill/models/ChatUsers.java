@@ -4,20 +4,10 @@ import java.sql.Date;
 
 public class ChatUsers {
 
-	long idchatusers;
 	long user;
 	long chat;
 	Date joined;
 
-	public long getIdchatusers()
-	{
-		return idchatusers;
-	}
-
-	public void setIdchatusers(long idchatusers)
-	{
-		this.idchatusers = idchatusers;
-	}
 
 	public long getUser()
 	{

@@ -1,17 +1,56 @@
 package com.mill.models;
 
-import java.io.Serializable;
 import java.sql.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Chat implements Serializable{
+public class Chat {
 
-	private static final long serialVersionUID = 4621196315675278186L;
 	long idchats;
 	String name;
 	Date creationdate;
+	long user;
+	List<User> participants;
+	List<Message> messages;
+	
+	public Chat()
+	{
+		participants = new ArrayList<>();
+		messages = new ArrayList<>();
+	}
+
+	public List<User> getParticipants()
+	{
+		return participants;
+	}
+
+	public void setParticipants(List<User> participants)
+	{
+		this.participants = participants;
+	}
+
+	public List<Message> getMessages()
+	{
+		return messages;
+	}
+
+	public void setMessages(List<Message> messages)
+	{
+		this.messages = messages;
+	}
+
+	public long getUser()
+	{
+		return user;
+	}
+
+	public void setUser(long user)
+	{
+		this.user = user;
+	}
 
 	public long getIdchats()
 	{
@@ -41,6 +80,16 @@ public class Chat implements Serializable{
 	public void setCreationdate(Date creationdate)
 	{
 		this.creationdate = creationdate;
+	}
+	
+	public void addMessage(Message message)
+	{
+		messages.add(message);
+	}
+	
+	public void addParticipant(User user)
+	{
+		participants.add(user);
 	}
 
 }

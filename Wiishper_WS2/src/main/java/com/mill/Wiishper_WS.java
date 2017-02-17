@@ -97,6 +97,7 @@ public class Wiishper_WS extends Application {
 				result.setState(0);
 				result.setData("Ocurrió un error inesperado");
 			}
+			System.out.println("Finish processing...");
 			return Response.status(500).entity(result).build();
 		}
 

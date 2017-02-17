@@ -17,6 +17,9 @@ public class CentralProcessor {
 	
 	private AccessManager accessManager;
 	private PeopleManager peopleManager;
+	private ProductManager productManager;
+	private StoreManager storeManager;
+	private ChatManager chatManager;
 	private ObjectMapper mapper;
 	private DaoFactory factory;
 	private SqlUtil sqlUtil;
@@ -27,7 +30,10 @@ public class CentralProcessor {
 		mapper = new ObjectMapper();
 		factory = DaoFactory.factoryProducer(Constants.DATABASE);
 		accessManager = new AccessManager(sqlUtil, mapper, factory);
-		peopleManager = new PeopleManager(sqlUtil, mapper, factory);
+		peopleManager = new PeopleManager(sqlUtil, mapper, factory);		
+		storeManager = new StoreManager(sqlUtil, mapper, factory);
+		productManager = new ProductManager(sqlUtil, mapper, factory);
+		chatManager = new ChatManager(sqlUtil, mapper, factory);
 	}
 	
 	public Result process(Message message, String username) throws WSException, SQLException, NoSuchAlgorithmException
@@ -39,6 +45,12 @@ public class CentralProcessor {
 				return accessManager.process(message, username);
 			case 2:
 				return peopleManager.process(message, username);
+			case 3:
+				return productManager.process(message, username);
+			case 4:
+				return storeManager.process(message, username);
+			case 5:
+				return chatManager.process(message, username);
 			default:
 				throw new WSException(Constants.INVALID_OPERATION, "Operación no válida");
 		}

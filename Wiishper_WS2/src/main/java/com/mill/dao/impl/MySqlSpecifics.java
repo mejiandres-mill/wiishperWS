@@ -12,6 +12,7 @@ import com.mill.models.Country;
 import com.mill.models.Friendship;
 import com.mill.models.Image;
 import com.mill.models.Message;
+import com.mill.models.MessageProducts;
 import com.mill.models.Product;
 import com.mill.models.ProductImages;
 import com.mill.models.ProductTags;
@@ -45,9 +46,10 @@ public class MySqlSpecifics {
 			case Constants.TABLE_CHATS:
 				sb.append(" idchats = '");
 				break;
+			//user chat
 			case Constants.TABLE_CHATUSERS:
-				sb.append(" idchatusers = '");
-				break;
+				return sb.append(" users_idusers = '").append(keyValues[0]).append("' AND chats_idchats = '")
+						.append(keyValues[1]).append("'").toString();
 			case Constants.TABLE_COUNTRIES:
 				sb.append(" idcountries = '");
 				break;
@@ -61,6 +63,10 @@ public class MySqlSpecifics {
 			case Constants.TABLE_MESSAGES:
 				sb.append(" idmessages = '");
 				break;
+			//message product
+			case Constants.TABLE_MESSAGE_PRODUCTS:
+				return sb.append(" messages_idmessages = '").append(keyValues[0]).append("' AND products_idproducts = '")
+						.append(keyValues[1]).append("'").toString();
 			case Constants.TABLE_PRODUCT_IMAGES:
 				sb.append(" idproduct_images = '");
 				break;
@@ -110,8 +116,9 @@ public class MySqlSpecifics {
 				values[0] = ((Chat) currentEntity).getIdchats();
 				break;
 			case Constants.TABLE_CHATUSERS:
-				values = new long[1];
-				values[0] = ((ChatUsers) currentEntity).getIdchatusers();
+				values = new long[2];
+				values[0] = ((ChatUsers) currentEntity).getUser();
+				values[1] = ((ChatUsers) currentEntity).getChat();
 				break;
 			case Constants.TABLE_COUNTRIES:
 				values = new long[1];
@@ -129,6 +136,11 @@ public class MySqlSpecifics {
 			case Constants.TABLE_MESSAGES:
 				values = new long[1];
 				values[0] = ((Message) currentEntity).getIdmessages();
+				break;
+			case Constants.TABLE_MESSAGE_PRODUCTS:
+				values = new long[2];
+				values[0] = ((MessageProducts) currentEntity).getMessage();
+				values[0] = ((MessageProducts) currentEntity).getProduct();
 				break;
 			case Constants.TABLE_PRODUCT_IMAGES:
 				values = new long[1];
@@ -191,6 +203,8 @@ public class MySqlSpecifics {
 				return (T) ImageDao.getEntity(rs, eager);
 			case Constants.TABLE_MESSAGES:
 				return (T) MessageDao.getEntity(rs, eager);
+			case Constants.TABLE_MESSAGE_PRODUCTS:
+				return (T) MessageProductsDao.getEntity(rs, eager);
 			case Constants.TABLE_PRODUCT_IMAGES:
 				return (T) ProductImagesDao.getEntity(rs, eager);
 			case Constants.TABLE_PRODUCT_TAGS:
@@ -230,6 +244,8 @@ public class MySqlSpecifics {
 				return ImageDao.getPreparedInsert(conn, tablename, currentEntity);
 			case Constants.TABLE_MESSAGES:
 				return MessageDao.getPreparedInsert(conn, tablename, currentEntity);
+			case Constants.TABLE_MESSAGE_PRODUCTS:
+				return MessageProductsDao.getPreparedInsert(conn, tablename, currentEntity);
 			case Constants.TABLE_PRODUCT_IMAGES:
 				return ProductImagesDao.getPreparedInsert(conn, tablename, currentEntity);
 			case Constants.TABLE_PRODUCT_TAGS:
@@ -269,6 +285,8 @@ public class MySqlSpecifics {
 				return ImageDao.getPreparedUpdate(conn, tablename, currentEntity);
 			case Constants.TABLE_MESSAGES:
 				return MessageDao.getPreparedUpdate(conn, tablename, currentEntity);
+			case Constants.TABLE_MESSAGE_PRODUCTS:
+				return MessageProductsDao.getPreparedUpdate(conn, tablename, currentEntity);
 			case Constants.TABLE_PRODUCT_IMAGES:
 				return ProductImagesDao.getPreparedUpdate(conn, tablename, currentEntity);
 			case Constants.TABLE_PRODUCT_TAGS:

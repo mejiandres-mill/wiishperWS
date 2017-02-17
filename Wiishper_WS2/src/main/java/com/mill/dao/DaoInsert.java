@@ -6,5 +6,7 @@ import java.sql.SQLException;
 public interface DaoInsert {
 	
 	public abstract<T> boolean putInto(Connection conn, String tablename, T object, boolean running) throws SQLException;
+	
+	public abstract<T> long putInto(Connection conn, String tablename, T object) throws SQLException;
 
 }

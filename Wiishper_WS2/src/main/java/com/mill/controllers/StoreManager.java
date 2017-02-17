@@ -66,7 +66,7 @@ public class StoreManager {
 		Connection conn = sqlUtil.getConnection();
 		boolean success = factory.getDaoInsert().<Store>putInto(conn, Constants.TABLE_STORES, store, false);
 		r.setState(success ? Constants.STATE_OK : Constants.DATABASE_ERROR);
-		r.setData(success ? "Tienda agragada" : "Error de base de datos");
+		r.setData(success ? "Tienda agregada" : "Error de base de datos");
 		return r;
 	}
 	
@@ -115,7 +115,8 @@ public class StoreManager {
 		tag = tags.get(0);
 		conn = sqlUtil.getConnection();
 		StoreTags st = new StoreTags();
-		st.setStore((long) map.get("idstores"));
+		int idstores =  (int) map.get("idstores");
+		st.setStore((long) idstores);
 		st.setTag(tag.getIdtags());
 		boolean success = factory.getDaoInsert().<StoreTags>putInto(conn, Constants.TABLE_STORE_TAGS, st, false);
 		

@@ -1,11 +1,42 @@
 package com.mill.models;
 
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.List;
+
 public class Message {
 
 	long idmessages;
 	String message;
 	long chat;
 	long sender;
+	Timestamp stamp;
+	List<Product> products;
+	
+	public Message()
+	{
+		products = new ArrayList<>();
+	}
+
+	public List<Product> getProducts()
+	{
+		return products;
+	}
+
+	public void setProducts(List<Product> products)
+	{
+		this.products = products;
+	}
+
+	public Timestamp getStamp()
+	{
+		return stamp;
+	}
+
+	public void setStamp(Timestamp stamp)
+	{
+		this.stamp = stamp;
+	}
 
 	public long getIdmessages()
 	{
@@ -45,6 +76,11 @@ public class Message {
 	public void setSender(long sender)
 	{
 		this.sender = sender;
+	}
+	
+	public void addProduct(Product product)
+	{
+		products.add(product);
 	}
 
 }
