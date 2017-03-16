@@ -5,6 +5,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
 import com.mill.dao.DaoFactory;
 import com.mill.dao.DaoInsert;
 
@@ -18,12 +20,12 @@ public class MySqlInsert implements DaoInsert{
 	}
 
 	@Override
-	public <T> boolean putInto(Connection conn, String tablename, T object, boolean running) throws SQLException
+	public <T> boolean putInto(Connection conn, String tablename, T object, DaoFactory factory, boolean running) throws SQLException, NamingException
 	{
 		PreparedStatement ps = null;
 		try
 		{
-			if(factory.getDaoRead().<T>exists(conn, tablename, object))
+			if(factory.getDaoRead().<T>exists(conn, tablename, object, factory))
 				return false;
 			ps = MySqlSpecifics.<T>getPreparedInsert(conn, tablename, object);
 			ps.executeUpdate();
@@ -39,13 +41,13 @@ public class MySqlInsert implements DaoInsert{
 	
 	@Override 
 	public 
-	<T> long putInto(Connection conn, String tablename, T object) throws SQLException
+	<T> long putInto(Connection conn, String tablename, T object, DaoFactory factory) throws SQLException, NamingException
 	{
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		try
 		{
-			if(factory.getDaoRead().<T>exists(conn, tablename, object))
+			if(factory.getDaoRead().<T>exists(conn, tablename, object, factory))
 				return -1;
 			ps = MySqlSpecifics.<T>getPreparedInsert(conn, tablename, object);
 			ps.executeUpdate();

@@ -51,6 +51,7 @@ public class Constants {
 	public static final int OPER_LOAD_CHATS = 504;
 	public static final int OPER_ADD_PRODUCT_MESSAGE = 505;
 	
+	
 	//Table names
 	public static final String TABLE_USERS = "users";
 	public static final String TABLE_PRODUCTS = "products";

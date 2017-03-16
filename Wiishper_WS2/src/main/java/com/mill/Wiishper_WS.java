@@ -85,7 +85,7 @@ public class Wiishper_WS extends Application {
 			}else if(e instanceof NoSuchAlgorithmException)
 			{
 				result.setState(Constants.SHA256_ERROR);
-				result.setData("Error de seguridad, no se encontró el algoritmo");
+				result.setData("Error de seguridad, no se encontrÃ³ el algoritmo");
 			}else if(e instanceof NotAuthorizedException)
 			{
 				result.setState(Constants.AUTHENTICATION_ERROR);
@@ -95,7 +95,7 @@ public class Wiishper_WS extends Application {
 			else
 			{
 				result.setState(0);
-				result.setData("Ocurrió un error inesperado");
+				result.setData("OcurriÃ³ un error inesperado");
 			}
 			System.out.println("Finish processing...");
 			return Response.status(500).entity(result).build();

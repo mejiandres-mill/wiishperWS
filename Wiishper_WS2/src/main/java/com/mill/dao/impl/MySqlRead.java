@@ -7,6 +7,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.naming.NamingException;
+
 import com.mill.dao.DaoFactory;
 import com.mill.dao.DaoRead;
 import com.mill.dao.QueryType;
@@ -22,7 +24,7 @@ public class MySqlRead implements DaoRead{
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> getAll(Connection conn, String tablename) throws SQLException
+	public <T> List<T> getAll(Connection conn, String tablename, DaoFactory factory) throws SQLException, NamingException
 	{
 		List<T> list = new ArrayList<>();
 		PreparedStatement ps = null;
@@ -33,8 +35,12 @@ public class MySqlRead implements DaoRead{
 			rs = ps.executeQuery();
 			while(rs.next())
 			{
-				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, false));
+				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, false, factory));
 			}
+		}
+		catch(NamingException e)
+		{
+			throw e;
 		}
 		finally
 		{
@@ -45,8 +51,8 @@ public class MySqlRead implements DaoRead{
 
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> getAllForInput(Connection conn, String tablename, String columnName, String searchValue)
-			throws SQLException
+	public <T> List<T> getAllForInput(Connection conn, String tablename, String columnName, String searchValue, DaoFactory factory)
+			throws SQLException, NamingException
 	{
 		List<T> list = new ArrayList<>();
 		PreparedStatement ps = null;
@@ -57,8 +63,12 @@ public class MySqlRead implements DaoRead{
 			ps = conn.prepareStatement("SELECT * FROM " + tablename + " WHERE " + columnName + " LIKE '%" + searchValue + "%' ");
 			rs = ps.executeQuery();
 			while(rs.next())
-				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, false));
+				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, true, factory));
 			
+		}
+		catch(NamingException e)
+		{
+			throw e;
 		}
 		finally
 		{
@@ -69,7 +79,7 @@ public class MySqlRead implements DaoRead{
 	
 	@Override
 	@SuppressWarnings("unchecked")
-	public <T> List<T> getAllForInputExact(Connection conn, String tablename, String columnName, String searchValue) throws SQLException
+	public <T> List<T> getAllForInputExact(Connection conn, String tablename, String columnName, String searchValue, DaoFactory factory) throws SQLException, NamingException
 	{
 		List<T> list = new ArrayList<>();
 		PreparedStatement ps = null;
@@ -80,7 +90,7 @@ public class MySqlRead implements DaoRead{
 			ps = conn.prepareStatement("SELECT * FROM " + tablename + " WHERE " + columnName + " = '" + searchValue + "' ");
 			rs = ps.executeQuery();
 			while(rs.next())
-				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, false));
+				list.add((T) MySqlSpecifics.getEntityFromResultSet(tablename, rs, false, factory));
 			
 		}
 		finally
@@ -91,7 +101,7 @@ public class MySqlRead implements DaoRead{
 	}
 
 	@Override
-	public <T> T get(Connection conn, String tablename, long[] keyValues) throws SQLException
+	public <T> T get(Connection conn, String tablename, long[] keyValues, DaoFactory factory) throws SQLException, NamingException
 	{
 		T currentEntity = null;
 		PreparedStatement ps = null;
@@ -102,7 +112,11 @@ public class MySqlRead implements DaoRead{
 			ps = conn.prepareStatement(queryString);
 			rs = ps.executeQuery();
 			if(rs.next())
-				currentEntity = MySqlSpecifics.getEntityFromResultSet(tablename, rs, false);
+				currentEntity = MySqlSpecifics.getEntityFromResultSet(tablename, rs, false, factory);
+		}
+		catch(NamingException e)
+		{
+			throw e;
 		}
 		finally
 		{
@@ -112,16 +126,23 @@ public class MySqlRead implements DaoRead{
 	}
 
 	@Override
-	public <T> boolean exists(Connection conn, String tablename, long[] keyValues) throws SQLException
+	public <T> boolean exists(Connection conn, String tablename, long[] keyValues, DaoFactory factory) throws SQLException, NamingException
 	{
-		return get(conn, tablename, keyValues) != null;
+		return get(conn, tablename, keyValues, factory) != null;
 	}
 
 	@Override
-	public <T> boolean exists(Connection conn, String tablename, T current) throws SQLException
+	public <T> boolean exists(Connection conn, String tablename, T current, DaoFactory factory) throws SQLException, NamingException
 	{
 		long[] keyValues = MySqlSpecifics.<T>getPrimaryKeyValues(tablename, current);
-		return get(conn, tablename, keyValues) != null;
+		try
+		{
+		return get(conn, tablename, keyValues, factory) != null;
+		}
+		catch(NamingException e)
+		{
+			throw e;
+		}
 	}
 
 }

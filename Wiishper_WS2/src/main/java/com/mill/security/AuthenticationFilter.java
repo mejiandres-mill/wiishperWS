@@ -33,7 +33,7 @@ public class AuthenticationFilter implements ContainerRequestFilter{
 		String authorizationHeader = requestcontext.getHeaderString(HttpHeaders.AUTHORIZATION);
 		
 		if(authorizationHeader == null || !authorizationHeader.startsWith("Basic "))
-			throw new NotAuthorizedException("El mensaje debe tener clave de autorización");
+			throw new NotAuthorizedException("El mensaje debe tener clave de autorizaciÃ³n");
 		
 		String token = authorizationHeader.substring("Basic ".length()).trim();
 		try
@@ -87,7 +87,7 @@ public class AuthenticationFilter implements ContainerRequestFilter{
 		DaoFactory factory = new MySqlFactory();
 		SqlUtil sqlUtil = new SqlUtil();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User>getAllForInputExact(conn, Constants.TABLE_USERS, "apikey", token);
+		List<User> user = factory.getDaoRead().<User>getAllForInputExact(conn, Constants.TABLE_USERS, "apikey", token, factory);
 		conn.close();
 		if(user.isEmpty())
 			throw new Exception();

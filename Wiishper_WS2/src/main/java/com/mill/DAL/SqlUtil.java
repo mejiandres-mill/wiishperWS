@@ -11,6 +11,7 @@ import javax.naming.InitialContext;
 import javax.naming.NamingException;
 import javax.sql.DataSource;
 
+import com.mill.dao.DaoFactory;
 import com.mill.dao.impl.MySqlSpecifics;
 import com.mill.exceptions.WSException;
 import com.mill.utils.Constants;
@@ -46,7 +47,7 @@ public class SqlUtil {
 		conn.close();
 	}
 	
-	public <T> List<T> executeDBOperation(String query, String tablename, Object[] params) throws SQLException, WSException
+	public <T> List<T> executeDBOperation(String query, String tablename, Object[] params, DaoFactory factory) throws SQLException, WSException, NamingException
 	{
 		Connection conn = getConnection();
 		PreparedStatement ps = conn.prepareStatement(query);
@@ -58,7 +59,7 @@ public class SqlUtil {
 			paramCount++;
 		
 		if(params.length != paramCount)
-			throw new WSException(Constants.DATABASE_ERROR, "Número de parametros no coincide con número de wildcards");
+			throw new WSException(Constants.DATABASE_ERROR, "NÃºmero de parametros no coincide con nÃºmero de wildcards");
 		
 		for(int i=0; i<paramCount; i++)
 			ps.setObject(i+1, params[i]);
@@ -67,7 +68,7 @@ public class SqlUtil {
 		
 		while(rs.next())
 		{
-			T object = MySqlSpecifics.<T>getEntityFromResultSet(tablename, rs, false);
+			T object = MySqlSpecifics.<T>getEntityFromResultSet(tablename, rs, true, factory);
 			list.add(object);
 		}
 		

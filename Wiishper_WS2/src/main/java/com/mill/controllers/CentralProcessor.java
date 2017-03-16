@@ -36,7 +36,7 @@ public class CentralProcessor {
 		chatManager = new ChatManager(sqlUtil, mapper, factory);
 	}
 	
-	public Result process(Message message, String username) throws WSException, SQLException, NoSuchAlgorithmException
+	public Result process(Message message, String username) throws WSException, SQLException, NoSuchAlgorithmException, NamingException
 	{
 		int operation = message.getOperation() / 100;
 		switch(operation)
@@ -52,7 +52,7 @@ public class CentralProcessor {
 			case 5:
 				return chatManager.process(message, username);
 			default:
-				throw new WSException(Constants.INVALID_OPERATION, "OperaciÛn no v·lida");
+				throw new WSException(Constants.INVALID_OPERATION, "Operaci√≥n no v√°lida");
 		}
 	}
 	

@@ -17,7 +17,7 @@ public class User
 	Date entrydate;
 	boolean active;
 	long country;
-	long image;
+	Image image;
 	String apikey;
 
 	public long getIdusers()
@@ -110,12 +110,12 @@ public class User
 		this.country = country;
 	}
 
-	public long getImage()
+	public Image getImage()
 	{
 		return image;
 	}
 
-	public void setImage(long image)
+	public void setImage(Image image)
 	{
 		this.image = image;
 	}

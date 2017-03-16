@@ -37,7 +37,7 @@ public class AccessManager {
 		this.sqlUtil = sqlutil;
 	}
 
-	public Result process(Message message, String username) throws WSException, SQLException, NoSuchAlgorithmException
+	public Result process(Message message, String username) throws WSException, SQLException, NoSuchAlgorithmException, NamingException
 	{
 		try
 		{
@@ -48,11 +48,11 @@ public class AccessManager {
 			case Constants.OPER_LOGIN:
 				return login(message.getData());
 			case Constants.OPER_REFRESH_SESSION:
-				throw new WSException(Constants.NOT_IMPLEMENTED_ERROR, "OperaciÛn no implementada");
+				throw new WSException(Constants.NOT_IMPLEMENTED_ERROR, "Operaci√≥n no implementada");
 			case Constants.OPER_UPDATE_USER:
 				return updateUser(message.getData());
 			default:
-				throw new WSException(Constants.INVALID_OPERATION, "OperaciÛn no v·lida");
+				throw new WSException(Constants.INVALID_OPERATION, "Operaci√≥n no v√°lida");
 			}
 		} catch (JsonParseException e)
 		{
@@ -66,71 +66,73 @@ public class AccessManager {
 		}
 	}
 
-	private Result singup(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException
+	private Result singup(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException, NamingException
 	{
 		User user = mapper.readValue(data, User.class);
 		Result r = new Result();
 
 		List<User> check = factory.getDaoRead().<User> getAllForInputExact(sqlUtil.getConnection(), Constants.TABLE_USERS,
-				"email", user.getEmail());
+				"email", user.getEmail(), factory);
 		if (check.isEmpty())
 		{
 			user.setPassword(Security.sha256(user.getPassword()));
 
 			boolean success = factory.getDaoInsert().<User> putInto(sqlUtil.getConnection(), Constants.TABLE_USERS,
-					user, false);
+					user, factory, false);
 
 			r.setState(success ? Constants.STATE_OK : Constants.EXISTING_USER);
-			r.setData(success ? mapper.writeValueAsString(user) : "La direcciÛn de correo electrÛnico ya est· en uso");
+			r.setData(success ? mapper.writeValueAsString(user) : "La direcci√≥n de correo electr√≥nico ya est√° en uso");
 		} else
 		{
 			r.setState(Constants.EXISTING_USER);
-			r.setData("La direcciÛn de correo electrÛnico ya est· en uso");
+			r.setData("La direcci√≥n de correo electr√≥nico ya est√° en uso");
 		}
 
 		return r;
 	}
 	
-	private Result login(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException
+	private Result login(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException, NamingException
 	{
 		User user = mapper.readValue(data, User.class);
 		Result r = new Result();
 		
+		System.out.println(Security.sha256(user.getPassword()));
+		
 		List<User> check = factory.getDaoRead().<User> getAllForInputExact(sqlUtil.getConnection(), Constants.TABLE_USERS,
-				"email", user.getEmail());
+				"email", user.getEmail(), factory);
 		
 		if(!check.isEmpty())
 		{
-			if(!check.get(0).getPassword().equals(Security.sha256(user.getPassword())))
+			if(check.get(0).getPassword().equals(Security.sha256(user.getPassword())))
 			{
 				user = check.get(0);
 				user.setApikey(Security.generateApiKey());
 				boolean update = factory.getDaoUpdate().<User>merge(sqlUtil.getConnection(), Constants.TABLE_USERS, user);
 				r.setState(update ? Constants.STATE_OK : Constants.DATABASE_ERROR);
-				r.setData(update ? mapper.writeValueAsString(user) : "OcurriÛ un error de autenticaciÛn");
+				r.setData(update ? mapper.writeValueAsString(user) : "Ocurri√≥ un error de autenticaci√≥n");
 			}
 			else
 			{
 				r.setState(Constants.AUTHENTICATION_ERROR);
-				r.setData("La contraseÒa no es correcta");
+				r.setData("La contrase√±a no es correcta");
 			}
 			
 		}
 		else
 		{
 			r.setState(Constants.AUTHENTICATION_ERROR);
-			r.setData("Esta cuenta de correo electrÛnico no se encuentra registrado");
+			r.setData("Esta cuenta de correo electr√≥nico no se encuentra registrado");
 		}
 		return r;
 	}
 	
-	private Result updateUser(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException
+	private Result updateUser(String data) throws JsonParseException, JsonMappingException, IOException, SQLException, NoSuchAlgorithmException, NamingException
 	{
 		Result r = new Result();
 		User user = mapper.readValue(data, User.class);
 		
 		List<User> check = factory.getDaoRead().<User> getAllForInputExact(sqlUtil.getConnection(), Constants.TABLE_USERS,
-				"email", user.getEmail());
+				"email", user.getEmail(), factory);
 		
 		if(!check.isEmpty())
 		{
@@ -139,12 +141,12 @@ public class AccessManager {
 			user.setApikey(Security.generateApiKey());
 			boolean update = factory.getDaoUpdate().<User>merge(sqlUtil.getConnection(), Constants.TABLE_USERS, user);
 			r.setState(update ? Constants.STATE_OK : Constants.DATABASE_ERROR);
-			r.setData(update ? mapper.writeValueAsString(user) : "OcurriÛ un error de actualizaciÛn");
+			r.setData(update ? mapper.writeValueAsString(user) : "Ocurri√≥ un error de actualizaci√≥n");
 		}
 		else
 		{
 			r.setState(Constants.AUTHENTICATION_ERROR);
-			r.setData("Esta cuenta de correo electrÛnico no se encuentra registrado");
+			r.setData("Esta cuenta de correo electr√≥nico no se encuentra registrado");
 		}
 		return r;
 	}

@@ -6,11 +6,17 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
+import com.mill.DAL.SqlUtil;
+import com.mill.dao.DaoFactory;
+import com.mill.models.Image;
 import com.mill.models.User;
+import com.mill.utils.Constants;
 
 public class UserDao {
 	
-	public static User getEntity(ResultSet rs, boolean eager) throws SQLException
+	public static User getEntity(ResultSet rs, boolean eager, DaoFactory factory) throws SQLException, NamingException
 	{
 		User user = new User();
 		user.setIdusers(rs.getLong("idusers"));
@@ -21,7 +27,16 @@ public class UserDao {
 		user.setEmail(rs.getString("email"));
 		user.setEntrydate(rs.getDate("entrydate"));
 		user.setGender(rs.getString("gender"));
-		user.setImage(rs.getLong("images_idimages"));
+		if(eager)
+		{
+			SqlUtil sqlUtil = new SqlUtil();
+			Connection conn = sqlUtil.getConnection();
+			long image = rs.getLong("images_idimages");
+			long[] keyValues = new long[1];
+			keyValues[0] = image;
+			user.setImage(factory.getDaoRead().<Image> get(conn, Constants.TABLE_IMAGES, keyValues, factory));
+			conn.close();
+		}
 		user.setName(rs.getString("name"));
 		user.setPassword(rs.getString("password"));
 		
@@ -41,7 +56,7 @@ public class UserDao {
 		ps.setString(6, user.getEmail());
 		ps.setDate(7, user.getEntrydate() == null ? new Date(System.currentTimeMillis()) : user.getEntrydate());
 		ps.setString(8, user.getGender());
-		ps.setLong(9, user.getImage() != 0 ? user.getImage() : 1);
+		ps.setLong(9, user.getImage() != null ? user.getImage().getIdimages() : 1);
 		ps.setString(10, user.getName());
 		ps.setString(11, user.getPassword());
 		
@@ -61,7 +76,7 @@ public class UserDao {
 		ps.setString(5, user.getEmail());
 		ps.setDate(6, user.getEntrydate() == null ? new Date(System.currentTimeMillis()) : user.getEntrydate());
 		ps.setString(7, user.getGender());
-		ps.setLong(8, user.getImage());
+		ps.setLong(8, user.getImage() == null ? 1 : user.getImage().getIdimages());
 		ps.setString(9, user.getName());
 		ps.setString(10, user.getPassword());
 		

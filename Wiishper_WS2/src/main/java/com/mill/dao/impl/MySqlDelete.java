@@ -4,6 +4,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
 import com.mill.dao.DaoDelete;
 import com.mill.dao.DaoFactory;
 import com.mill.dao.QueryType;
@@ -18,13 +20,13 @@ public class MySqlDelete implements DaoDelete {
 	}
 
 	@Override
-	public <T> boolean deleteFrom(Connection conn, String tablename, T object) throws SQLException
+	public <T> boolean deleteFrom(Connection conn, String tablename, T object, DaoFactory factory) throws SQLException, NamingException
 	{
 		PreparedStatement ps = null;
 		
 		try
 		{
-			if(!factory.getDaoRead().<T>exists(conn, tablename, object))
+			if(!factory.getDaoRead().<T>exists(conn, tablename, object, factory))
 				return false;
 			long[] primaryKeyValues = MySqlSpecifics.<T>getPrimaryKeyValues(tablename, object);
 			ps = conn.prepareStatement(MySqlSpecifics.queryString(tablename, primaryKeyValues, QueryType.DELETE));

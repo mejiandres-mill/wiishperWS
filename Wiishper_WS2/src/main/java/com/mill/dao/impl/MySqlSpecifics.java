@@ -5,6 +5,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.naming.NamingException;
+
+import com.mill.dao.DaoFactory;
 import com.mill.dao.QueryType;
 import com.mill.models.Chat;
 import com.mill.models.ChatUsers;
@@ -187,7 +190,7 @@ public class MySqlSpecifics {
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static <T> T getEntityFromResultSet(String tablename, ResultSet rs, boolean eager) throws SQLException
+	public static <T> T getEntityFromResultSet(String tablename, ResultSet rs, boolean eager, DaoFactory factory) throws SQLException, NamingException
 	{
 		switch(tablename)
 		{
@@ -222,7 +225,7 @@ public class MySqlSpecifics {
 			case Constants.TABLE_TASTES:
 				return (T) TasteDao.getEntity(rs, eager);
 			case Constants.TABLE_USERS:
-				return (T) UserDao.getEntity(rs, eager);				
+				return (T) UserDao.getEntity(rs, eager, factory);				
 			default:
 				return null;
 		}

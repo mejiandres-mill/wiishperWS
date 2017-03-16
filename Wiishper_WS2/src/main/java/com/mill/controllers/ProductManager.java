@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
+import javax.naming.NamingException;
+
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -39,7 +41,7 @@ public class ProductManager {
 		this.sqlUtil = sqlUtil;
 	}
 
-	public Result process(Message message, String username) throws SQLException, WSException
+	public Result process(Message message, String username) throws SQLException, WSException, NamingException
 	{
 		try
 		{
@@ -72,7 +74,7 @@ public class ProductManager {
 			case OPER_ADD_PRODUCT_IMAGE:
 				return addImage(message.getData(), username);
 			default:
-				throw new WSException(INVALID_OPERATION, "Operación no válida");
+				throw new WSException(INVALID_OPERATION, "OperaciÃ³n no vÃ¡lida");
 			}
 		} catch (JsonParseException e)
 		{
@@ -87,14 +89,14 @@ public class ProductManager {
 	}
 
 	private Result addProduct(String data, String username)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
 
 		Product product = mapper.readValue(data, Product.class);
 
-		boolean success = factory.getDaoInsert().<Product> putInto(conn, TABLE_PRODUCTS, product, false);
+		boolean success = factory.getDaoInsert().<Product> putInto(conn, TABLE_PRODUCTS, product, factory, false);
 
 		r.setState(success ? STATE_OK : DATABASE_ERROR);
 		r.setData(success ? "Producto agregado" : "Error de base de datos");
@@ -104,13 +106,13 @@ public class ProductManager {
 
 	@SuppressWarnings("unchecked")
 	private Result addTag(String data, String username)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
 		Map<String, Object> map = mapper.readValue(data, Map.class);
 		List<Tag> tags = factory.getDaoRead().<Tag> getAllForInputExact(conn, TABLE_TAGS, "name",
-				(String) map.get("name"));
+				(String) map.get("name"), factory);
 		conn.close();
 		Tag tag = null;
 		if (tags.isEmpty())
@@ -118,9 +120,9 @@ public class ProductManager {
 			conn = sqlUtil.getConnection();
 			tag = new Tag();
 			tag.setName((String) map.get("name"));
-			factory.getDaoInsert().<Tag> putInto(conn, TABLE_TAGS, tag, false);
+			factory.getDaoInsert().<Tag> putInto(conn, TABLE_TAGS, tag, factory, false);
 			conn = sqlUtil.getConnection();
-			tags = factory.getDaoRead().<Tag> getAllForInputExact(conn, TABLE_TAGS, "name", tag.getName());
+			tags = factory.getDaoRead().<Tag> getAllForInputExact(conn, TABLE_TAGS, "name", tag.getName(), factory);
 			conn.close();
 		}
 		tag = tags.get(0);
@@ -130,7 +132,7 @@ public class ProductManager {
 		pt.setProduct(idproducts);
 		pt.setTag(tag.getIdtags());
 
-		boolean success = factory.getDaoInsert().<ProductTags> putInto(conn, TABLE_PRODUCT_TAGS, pt, false);
+		boolean success = factory.getDaoInsert().<ProductTags> putInto(conn, TABLE_PRODUCT_TAGS, pt, factory, false);
 
 		r.setState(success ? STATE_OK : DATABASE_ERROR);
 		r.setData(success ? "Tag agregado" : "Error de base de datos");
@@ -139,13 +141,13 @@ public class ProductManager {
 
 	@SuppressWarnings("unchecked")
 	private Result addImage(String data, String username)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
 		Map<String, Object> map = mapper.readValue(data, Map.class);
 		List<Image> images = factory.getDaoRead().<Image> getAllForInputExact(conn, TABLE_IMAGES, "url",
-				(String) map.get("url"));
+				(String) map.get("url"), factory);
 		conn.close();
 		Image image = null;
 		if (images.isEmpty())
@@ -153,9 +155,9 @@ public class ProductManager {
 			conn = sqlUtil.getConnection();
 			image = new Image();
 			image.setUrl((String) map.get("url"));
-			factory.getDaoInsert().<Image> putInto(conn, TABLE_IMAGES, image, false);
+			factory.getDaoInsert().<Image> putInto(conn, TABLE_IMAGES, image, factory, false);
 			conn = sqlUtil.getConnection();
-			images = factory.getDaoRead().<Image> getAllForInputExact(conn, TABLE_TAGS, "name", image.getUrl());
+			images = factory.getDaoRead().<Image> getAllForInputExact(conn, TABLE_TAGS, "name", image.getUrl(), factory);
 			conn.close();
 		}
 		image = images.get(0);
@@ -166,7 +168,7 @@ public class ProductManager {
 		pt.setImage(image.getIdimages());
 		pt.setShow(true);
 
-		boolean success = factory.getDaoInsert().<ProductImages> putInto(conn, TABLE_PRODUCT_IMAGES, pt, false);
+		boolean success = factory.getDaoInsert().<ProductImages> putInto(conn, TABLE_PRODUCT_IMAGES, pt, factory, false);
 
 		r.setState(success ? STATE_OK : DATABASE_ERROR);
 		r.setData(success ? "Imagen agregada" : "Error de base de datos");
@@ -174,11 +176,11 @@ public class ProductManager {
 	}
 
 	private Result showRandomProducts(String data, String username)
-			throws SQLException, WSException, JsonProcessingException
+			throws SQLException, WSException, JsonProcessingException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username);
+		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username, factory);
 		conn.close();
 
 		String query = " SELECT p.idproducts AS idproducts, p.name AS 'name', p.price AS price, p.description AS description, p.stores_idstores AS stores_idstores, p.show as `show` "
@@ -186,7 +188,7 @@ public class ProductManager {
 				+ " WHERE p.idproducts NOT IN ( SELECT t.products_idproducts FROM tastes t WHERE t.users_idusers = ?)";
 		Object[] params = new Object[1];
 		params[0] = user.get(0).getIdusers();
-		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params);
+		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params, factory);
 		if (prods.isEmpty())
 		{
 			r.setState(NO_RESULTS_ERROR);
@@ -200,7 +202,7 @@ public class ProductManager {
 						+ "WHERE p.products_idproducts = ? AND `show`='1' ";
 				params = new Object[1];
 				params[0] = p.getIdproducts();
-				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params);
+				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params, factory);
 				for (Image i : imgs)
 				{
 					p.addImage(i);
@@ -213,11 +215,11 @@ public class ProductManager {
 	}
 
 	private Result addTaste(String data, String username, boolean like)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username);
+		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username, factory);
 		conn.close();
 
 		Taste taste = mapper.readValue(data, Taste.class);
@@ -225,13 +227,13 @@ public class ProductManager {
 		taste.setLike(like);
 		conn = sqlUtil.getConnection();
 
-		if (factory.getDaoRead().<Taste> exists(conn, TABLE_TASTES, taste))
+		if (factory.getDaoRead().<Taste> exists(conn, TABLE_TASTES, taste, factory))
 		{
 			factory.getDaoUpdate().<Taste> merge(conn, TABLE_TASTES, taste);
 			r.setData("Gusto actualizado");
 		} else
 		{
-			factory.getDaoInsert().<Taste> putInto(conn, TABLE_TASTES, taste, false);
+			factory.getDaoInsert().<Taste> putInto(conn, TABLE_TASTES, taste, factory, false);
 			r.setData("Gusto creado");
 		}
 
@@ -240,11 +242,11 @@ public class ProductManager {
 	}
 
 	private Result recomendProduct(String data, String username)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username);
+		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username, factory);
 		conn.close();
 
 		Recomendation recomendation = mapper.readValue(data, Recomendation.class);
@@ -252,29 +254,29 @@ public class ProductManager {
 
 		conn = sqlUtil.getConnection();
 
-		if (factory.getDaoRead().<Recomendation> exists(conn, TABLE_RECOMENDATIONS, recomendation))
+		if (factory.getDaoRead().<Recomendation> exists(conn, TABLE_RECOMENDATIONS, recomendation, factory))
 		{
 			r.setState(STATE_OK);
-			r.setData("Recomendación ya se hizo");
+			r.setData("RecomendaciÃ³n ya se hizo");
 			conn.close();
 		} else
 		{
 			conn.close();
 			conn = sqlUtil.getConnection();
-			factory.getDaoInsert().<Recomendation> putInto(conn, TABLE_RECOMENDATIONS, recomendation, false);
+			factory.getDaoInsert().<Recomendation> putInto(conn, TABLE_RECOMENDATIONS, recomendation, factory, false);
 			r.setState(STATE_OK);
-			r.setData("Recomendación hecha");
+			r.setData("RecomendaciÃ³n hecha");
 		}
 
 		return r;
 	}
 
 	private Result showUserProds(String data, String username, boolean liked)
-			throws SQLException, JsonProcessingException, WSException
+			throws SQLException, JsonProcessingException, WSException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username);
+		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username, factory);
 		conn.close();
 
 		String query = " SELECT p.idproducts AS idproducts, p.name AS 'name', p.price AS price, p.description AS description, p.stores_idstores AS stores_idstores, p.show as `show` "
@@ -283,7 +285,7 @@ public class ProductManager {
 		Object[] params = new Object[2];
 		params[0] = user.get(0).getIdusers();
 		params[1] = liked;
-		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params);
+		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params, factory);
 		if (prods.isEmpty())
 		{
 			r.setState(NO_RESULTS_ERROR);
@@ -297,7 +299,7 @@ public class ProductManager {
 						+ "WHERE p.products_idproducts = ? AND `show`='1' ";
 				params = new Object[1];
 				params[0] = p.getIdproducts();
-				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params);
+				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params, factory);
 				for (Image i : imgs)
 				{
 					p.addImage(i);
@@ -310,11 +312,11 @@ public class ProductManager {
 	}
 
 	private Result showRecomendations(String data, String username)
-			throws SQLException, WSException, JsonProcessingException
+			throws SQLException, WSException, JsonProcessingException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
-		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username);
+		List<User> user = factory.getDaoRead().<User> getAllForInputExact(conn, TABLE_USERS, "email", username, factory);
 		conn.close();
 
 		String query = " SELECT p.idproducts AS idproducts, p.name AS 'name', p.price AS price, p.description AS description, p.stores_idstores AS stores_idstores, p.show as `show` "
@@ -322,7 +324,7 @@ public class ProductManager {
 				+ " WHERE p.idproducts IN ( SELECT r.products_idproducts FROM recomendations r WHERE r.receipient = ? AND r.showed = 0)";
 		Object[] params = new Object[1];
 		params[0] = user.get(0).getIdusers();
-		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params);
+		List<Product> prods = sqlUtil.executeDBOperation(query, TABLE_PRODUCTS, params, factory);
 		if (prods.isEmpty())
 		{
 			r.setState(NO_RESULTS_ERROR);
@@ -336,7 +338,7 @@ public class ProductManager {
 						+ "WHERE p.products_idproducts = ? AND `show`='1' ";
 				params = new Object[1];
 				params[0] = p.getIdproducts();
-				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params);
+				List<Image> imgs = sqlUtil.executeDBOperation(query, TABLE_IMAGES, params, factory);
 				for (Image i : imgs)
 				{
 					p.addImage(i);
@@ -349,7 +351,7 @@ public class ProductManager {
 	}
 
 	private Result setProductVisibility(String data, String username, boolean show)
-			throws SQLException, JsonParseException, JsonMappingException, IOException
+			throws SQLException, JsonParseException, JsonMappingException, IOException, NamingException
 	{
 		Result r = new Result();
 		Connection conn = sqlUtil.getConnection();
@@ -357,7 +359,7 @@ public class ProductManager {
 		Product product = mapper.readValue(data, Product.class);
 		long[] keys = new long[1];
 		keys[0] = product.getIdproducts();
-		product = factory.getDaoRead().<Product> get(conn, TABLE_PRODUCTS, keys);
+		product = factory.getDaoRead().<Product> get(conn, TABLE_PRODUCTS, keys, factory);
 		conn.close();
 
 		if (product != null)
